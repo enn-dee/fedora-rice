@@ -1,0 +1,264 @@
+#!/usr/bin/env bash
+#
+# rice-backup — snapshot this machine's Niri + DankMaterialShell (main session)
+#               and Hyprland/ML4W (fallback) into ONE portable archive.
+#
+# Usage:  rice-backup [output.tar.gz]
+# Default output: ~/fedora-rice-YYYY-MM-DD.tar.gz
+#
+set -euo pipefail
+
+STAMP="$(date +%Y-%m-%d)"
+HOST="$(hostname 2>/dev/null || echo unknown)"
+OUT="${1:-$HOME/fedora-rice-$STAMP.tar.gz}"
+RDIR="fedora-rice-$STAMP"
+
+STAGE="$(mktemp -d)"
+trap 'rm -rf "$STAGE"' EXIT
+ROOT="$STAGE/$RDIR"
+mkdir -p "$ROOT/payload/config" "$ROOT/payload/local-share" "$ROOT/payload/home" "$ROOT/packages"
+
+info() { printf '\033[0;32m[*]\033[0m %s\n' "$*"; }
+
+# --- 1. the real ML4W config tree (contains every symlinked config + wallpapers) ---
+info "Staging ~/.mydotfiles (all ML4W configs + wallpapers)..."
+cp -a "$HOME/.mydotfiles" "$ROOT/payload/mydotfiles"
+
+# --- 2. extra ~/.config entries that are real (not symlinks) ---
+info "Staging extra ~/.config entries..."
+CONFIG_DIRS=(ml4w-statusbar ml4w-dock ml4w-powermenu ml4w-dotfiles-installer \
+             ghostty cava htop nwg-look nwg-displays dconf systemd \
+             environment.d niri DankMaterialShell)
+CONFIG_FILES=(background mimeapps.list user-dirs.dirs monitors.xml pavucontrol.ini)
+for d in "${CONFIG_DIRS[@]}"; do
+    [ -d "$HOME/.config/$d" ] && cp -a "$HOME/.config/$d" "$ROOT/payload/config/"
+done
+for f in "${CONFIG_FILES[@]}"; do
+    [ -e "$HOME/.config/$f" ] && cp -a "$HOME/.config/$f" "$ROOT/payload/config/"
+done
+
+# DMS plugins are ~143 MB of git checkouts and are re-installable from
+# plugins.lock.json — keep them out of the archive.
+rm -rf "$ROOT/payload/config/DankMaterialShell/plugins"
+
+# Don't ship ad-hoc local backups of the niri config
+rm -f "$ROOT/payload/config/niri/config.kdl.bak-"*
+
+# --- 3. ~/.local/share assets (fonts, icon theme, ML4W Quickshell apps) ---
+info "Staging ~/.local/share assets (fonts, icons, ML4W apps)..."
+LS_ITEMS=(
+    fonts/JetBrainsMonoNerdFont
+    icons/kora
+    icons/Bibata-Modern-Ice
+    quickshell-overview
+    ml4w-dock
+    ml4w-powermenu
+    ml4w-walker
+    ml4w-dotfiles-settings
+    ml4w-dotfiles-installer
+    color-schemes
+)
+for item in "${LS_ITEMS[@]}"; do
+    if [ -e "$HOME/.local/share/$item" ]; then
+        mkdir -p "$ROOT/payload/local-share/$(dirname "$item")"
+        cp -a "$HOME/.local/share/$item" "$ROOT/payload/local-share/$item"
+    fi
+done
+
+# --- 3b. DankMaterialShell runtime state + the active wallpaper ---
+info "Staging DMS session state (wallpaper path)..."
+mkdir -p "$ROOT/payload/local-state/DankMaterialShell"
+[ -f "$HOME/.local/state/DankMaterialShell/session.json" ] && \
+    cp -a "$HOME/.local/state/DankMaterialShell/session.json" "$ROOT/payload/local-state/DankMaterialShell/"
+
+WP=""
+if command -v dms >/dev/null 2>&1; then
+    WP="$(dms ipc call wallpaper get 2>/dev/null | tr -d '\n' || true)"
+fi
+if [ -z "$WP" ] && [ -f "$HOME/.local/state/DankMaterialShell/session.json" ]; then
+    WP="$(sed -n 's/.*"wallpaperPath"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' \
+          "$HOME/.local/state/DankMaterialShell/session.json" 2>/dev/null | head -1)"
+fi
+if [ -n "$WP" ] && [ -f "$WP" ]; then
+    info "Staging wallpaper: $WP"
+    mkdir -p "$ROOT/payload/wallpapers"
+    cp -a "$WP" "$ROOT/payload/wallpapers/"
+    printf '%s\n' "$WP" > "$ROOT/payload/wallpapers/wallpaper-path.txt"
+fi
+
+# --- 4. shell setup ---
+info "Staging shell setup (.oh-my-zsh, .zsh)..."
+for item in .oh-my-zsh .zsh; do
+    [ -e "$HOME/$item" ] && cp -a "$HOME/$item" "$ROOT/payload/home/"
+done
+
+# --- 5. record the ML4W symlinks (~/.config/* and ~/.* -> ~/.mydotfiles/...) ---
+info "Recording symlinks..."
+: > "$ROOT/symlinks.txt"
+find "$HOME" -maxdepth 1 -type l -printf '%P\t%l\n' >> "$ROOT/symlinks.txt"
+find "$HOME/.config" -maxdepth 1 -type l -printf '.config/%P\t%l\n' >> "$ROOT/symlinks.txt"
+
+# --- 6. package lists (best effort, for reference on the new machine) ---
+info "Recording package lists..."
+if command -v dnf >/dev/null 2>&1; then
+    dnf repoquery --userinstalled --qf '%{name}\n' 2>/dev/null | sort -u \
+        > "$ROOT/packages/dnf-userinstalled.txt" || true
+    dnf history userinstalled 2>/dev/null > "$ROOT/packages/dnf-history-userinstalled.txt" || true
+fi
+command -v pacman >/dev/null 2>&1 && pacman -Qqe 2>/dev/null > "$ROOT/packages/pacman-explicit.txt" || true
+command -v apt-mark >/dev/null 2>&1 && apt-mark showmanual 2>/dev/null > "$ROOT/packages/apt-manual.txt" || true
+command -v flatpak >/dev/null 2>&1 && flatpak list --app --columns=application 2>/dev/null \
+    > "$ROOT/packages/flatpaks.txt" || true
+
+# --- 7. self-contained helper scripts + docs ---
+info "Writing restore.sh, README and manifest..."
+cp "$0" "$ROOT/rice-backup.sh" 2>/dev/null || true
+
+cat > "$ROOT/restore.sh" <<'RESTORE_EOF'
+#!/usr/bin/env bash
+#
+# restore.sh — put this machine's rice back in place.
+# Safe to re-run. Existing real (non-symlink) files are moved aside, never deleted.
+#
+set -euo pipefail
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+P="$HERE/payload"
+STAMP="$(date +%s)"
+
+info() { printf '\033[0;32m[*]\033[0m %s\n' "$*"; }
+
+# 1. the ML4W config tree
+if [ -d "$P/mydotfiles" ]; then
+    info "Restoring ~/.mydotfiles ..."
+    mkdir -p "$HOME/.mydotfiles"
+    cp -a "$P/mydotfiles/." "$HOME/.mydotfiles/"
+fi
+
+# 2. extra ~/.config entries (real files)
+if [ -d "$P/config" ]; then
+    info "Restoring ~/.config entries ..."
+    mkdir -p "$HOME/.config"
+    cp -a "$P/config/." "$HOME/.config/"
+fi
+
+# 3. ~/.local/share assets (fonts, icons, apps)
+if [ -d "$P/local-share" ]; then
+    info "Restoring ~/.local/share assets ..."
+    mkdir -p "$HOME/.local/share"
+    cp -a "$P/local-share/." "$HOME/.local/share/"
+fi
+
+# 3b. DMS runtime state (points at the wallpaper)
+if [ -d "$P/local-state" ]; then
+    info "Restoring ~/.local/state ..."
+    mkdir -p "$HOME/.local/state"
+    cp -a "$P/local-state/." "$HOME/.local/state/"
+fi
+
+# 3c. wallpaper, back to the absolute path DMS remembers
+if [ -d "$P/wallpapers" ] && [ -f "$P/wallpapers/wallpaper-path.txt" ]; then
+    WP="$(cat "$P/wallpapers/wallpaper-path.txt")"
+    if [ -n "$WP" ]; then
+        info "Restoring wallpaper: $WP"
+        mkdir -p "$(dirname "$WP")"
+        for f in "$P/wallpapers"/*; do
+            [ "$(basename "$f")" = "wallpaper-path.txt" ] && continue
+            cp -a "$f" "$(dirname "$WP")/"
+        done
+    fi
+fi
+
+# 4. shell setup
+if [ -d "$P/home" ]; then
+    info "Restoring shell setup ..."
+    cp -a "$P/home/." "$HOME/"
+fi
+
+# 5. recreate the symlinks (skip/backup anything in the way)
+if [ -f "$HERE/symlinks.txt" ]; then
+    info "Recreating symlinks ..."
+    while IFS=$'\t' read -r link target; do
+        [ -z "${link:-}" ] && continue
+        dest="$HOME/$link"
+        if [ -e "$dest" ] && [ ! -L "$dest" ]; then
+            mv "$dest" "$dest.pre-rice-restore-$STAMP"
+        fi
+        mkdir -p "$(dirname "$dest")"
+        ln -sfn "$target" "$dest"
+    done < "$HERE/symlinks.txt"
+fi
+
+# 6. refresh caches
+info "Refreshing font / icon caches ..."
+command -v fc-cache >/dev/null 2>&1 && fc-cache -f >/dev/null 2>&1 || true
+for theme in kora Bibata-Modern-Ice; do
+    if [ -d "$HOME/.local/share/icons/$theme" ] && command -v gtk-update-icon-cache >/dev/null 2>&1; then
+        gtk-update-icon-cache -f "$HOME/.local/share/icons/$theme" >/dev/null 2>&1 || true
+    fi
+done
+
+cat <<'NOTE'
+
+[OK] Restore complete.
+
+Next steps:
+  * The base system must exist first. Main session: niri, DankMaterialShell (dms),
+    ghostty, matugen. Fallback session: Hyprland, Quickshell (qs), waybar, rofi,
+    kitty, swaync, awww, and the ML4W dotfiles. See packages/ for the list from
+    the machine this backup came from.
+  * Log out and back in so niri / DMS (and Hyprland, if you use it) reload
+    everything. Niri reloads config.kdl live; DMS reads settings.json on start.
+  * If the wallpaper did not come back, point DMS at it again:
+        dms ipc call wallpaper set <path>
+  * DMS plugins are NOT in this archive (too large). Re-install them from the
+    DMS plugin manager; plugins.lock.json lists what was installed.
+
+NOTE
+RESTORE_EOF
+chmod +x "$ROOT/restore.sh"
+
+cat > "$ROOT/README.md" <<EOF
+# Fedora Rice — Niri + DankMaterialShell (main) / Hyprland + ML4W (fallback)
+
+- Created: $STAMP
+- Host:    $HOST
+
+## Sessions
+
+- **Niri** is the default GDM session (saved in AccountsService as \`Session=niri\`).
+- **Hyprland / ML4W** stays installed and selectable at the login screen as a
+  fallback. Nothing is removed by this backup or its restore.
+
+## What's inside
+
+| payload path            | restores to        | contents                                   |
+|-------------------------|--------------------|--------------------------------------------|
+| \`payload/mydotfiles/\`   | \`~/.mydotfiles\`     | all ML4W configs (hypr, quickshell, waybar, rofi, kitty, ...) + wallpapers |
+| \`payload/config/\`       | \`~/.config\`         | niri (\`config.kdl\` + \`dms/*.kdl\`), DankMaterialShell settings, ml4w-statusbar, ghostty, cava, ... |
+| \`payload/local-share/\`  | \`~/.local/share\`    | JetBrainsMono Nerd Font, kora icon theme, ML4W Quickshell apps, matugen color-schemes |
+| \`payload/local-state/\`  | \`~/.local/state\`    | DMS \`session.json\` (remembered wallpaper)  |
+| \`payload/wallpapers/\`   | original path       | active wallpaper + \`wallpaper-path.txt\`    |
+| \`payload/home/\`         | \`~\`                 | \`.oh-my-zsh\`, \`.zsh\`                        |
+| \`symlinks.txt\`          | —                  | recreates the \`~/.config/*\` + \`~/.*\` symlinks into \`~/.mydotfiles\` |
+| \`packages/\`             | —                  | package list from the source machine       |
+| \`rice-backup.sh\`        | —                  | re-run this to make a fresh backup later   |
+
+## Restore on a fresh install
+
+\`\`\`
+tar -xzf fedora-rice-$STAMP.tar.gz
+cd fedora-rice-$STAMP
+./restore.sh
+\`\`\`
+
+Then log out and back in. \`restore.sh\` is safe to re-run and never deletes
+your files (anything in the way is moved to \`*.pre-rice-restore-*\`).
+EOF
+
+# manifest of everything included
+( cd "$ROOT" && find . -type d -o -type f | sort ) > "$ROOT/MANIFEST.txt"
+
+# --- 8. pack it up ---
+info "Creating archive: $OUT"
+tar -C "$STAGE" -czf "$OUT" "$RDIR"
+info "Done -> $OUT  ($(du -h "$OUT" | cut -f1))"

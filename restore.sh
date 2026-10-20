@@ -74,9 +74,11 @@ fi
 # 6. refresh caches
 info "Refreshing font / icon caches ..."
 command -v fc-cache >/dev/null 2>&1 && fc-cache -f >/dev/null 2>&1 || true
-if [ -d "$HOME/.local/share/icons/kora" ] && command -v gtk-update-icon-cache >/dev/null 2>&1; then
-    gtk-update-icon-cache -f "$HOME/.local/share/icons/kora" >/dev/null 2>&1 || true
-fi
+for theme in kora Bibata-Modern-Ice; do
+    if [ -d "$HOME/.local/share/icons/$theme" ] && command -v gtk-update-icon-cache >/dev/null 2>&1; then
+        gtk-update-icon-cache -f "$HOME/.local/share/icons/$theme" >/dev/null 2>&1 || true
+    fi
+done
 
 cat <<'NOTE'
 

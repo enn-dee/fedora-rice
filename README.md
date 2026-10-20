@@ -292,6 +292,19 @@ cd fedora-rice
 
 *(Or simply download `fedora-rice.tar.gz` + `restore.sh` by hand — that is all you need.)*
 
+One-liners, if you don't want the whole repo:
+
+```bash
+# restore.sh — the snapshot (safe to re-run, never deletes anything)
+curl -fsSL https://raw.githubusercontent.com/enn-dee/fedora-rice/main/restore.sh -o restore.sh
+chmod +x restore.sh
+
+# rice-backup — the snapshot generator; re-install it on every new OS
+mkdir -p ~/.local/bin
+curl -fsSL https://raw.githubusercontent.com/enn-dee/fedora-rice/main/rice-backup -o ~/.local/bin/rice-backup
+chmod +x ~/.local/bin/rice-backup
+```
+
 ### Step 4 — Restore
 
 ```bash
@@ -302,6 +315,36 @@ cd fedora-rice-*/
 
 `restore.sh` is **safe to re-run**. If a real (non-symlink) file is already in
 the way, it is moved to `*.pre-rice-restore-<timestamp>` — never deleted.
+
+### Step 4.5 — Making fresh snapshots later (`rice-backup`)
+
+`rice-backup` is the generator that built this archive. It stages `~/.mydotfiles`,
+the real (non-symlink) `~/.config` entries, `~/.local/share` assets (fonts, kora
++ Bibata cursors, ML4W apps), the DMS session state + active wallpaper, the zsh
+setup, records every symlink, captures the package lists, embeds a fresh
+`restore.sh`, and packs it all into one tarball:
+
+```bash
+rice-backup                              # → ~/fedora-rice-YYYY-MM-DD.tar.gz
+rice-backup /path/to/fedora-rice.tar.gz  # explicit output
+```
+
+Kept out of the archive on purpose: DMS `plugins/` (~143 MB of git checkouts —
+re-install from the plugin manager via `plugins.lock.json`), `~/.local/bin`,
+and ad-hoc `config.kdl.bak-*` files.
+
+Workflow after every ricing session:
+
+```bash
+rice-backup ~/fedora-rice/fedora-rice.tar.gz
+cd ~/fedora-rice
+git add -A && git commit -m "snapshot: <what changed>" && git push
+```
+
+> Keep the repo's `rice-backup` copy in sync with the installed one:
+> the freshly generated archive ships the current script as `rice-backup.sh`
+> (`cp fedora-rice-*/rice-backup.sh ~/.local/bin/rice-backup` in the other
+> direction, or copy it into the repo before committing).
 
 What it does, in order:
 
