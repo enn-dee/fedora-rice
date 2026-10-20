@@ -13,6 +13,12 @@
 ./payload/config/cava/shaders/bar_spectrum.frag
 ./payload/config/cava/shaders/northern_lights.frag
 ./payload/config/cava/shaders/pass_through.vert
+./payload/config/DankMaterialShell
+./payload/config/DankMaterialShell/.changelog-1.6
+./payload/config/DankMaterialShell/firefox.css
+./payload/config/DankMaterialShell/.firstlaunch
+./payload/config/DankMaterialShell/plugins.lock.json
+./payload/config/DankMaterialShell/settings.json
 ./payload/config/dconf
 ./payload/config/dconf/user
 ./payload/config/ghostty
@@ -34,6 +40,18 @@
 ./payload/config/ml4w-statusbar
 ./payload/config/ml4w-statusbar/config.json
 ./payload/config/monitors.xml
+./payload/config/niri
+./payload/config/niri/config.kdl
+./payload/config/niri/dms
+./payload/config/niri/dms/alttab.kdl
+./payload/config/niri/dms/binds.kdl
+./payload/config/niri/dms/colors.kdl
+./payload/config/niri/dms/cursor.kdl
+./payload/config/niri/dms/input.kdl
+./payload/config/niri/dms/layout.kdl
+./payload/config/niri/dms/outputs.kdl
+./payload/config/niri/dms/windowrules.kdl
+./payload/config/niri/dms/wpblur.kdl
 ./payload/config/nwg-displays
 ./payload/config/nwg-displays/config
 ./payload/config/nwg-displays/profiles
@@ -2371,6 +2389,10 @@
 ./payload/home/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.plugin.zsh
 ./payload/home/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 ./payload/local-share
+./payload/local-share/color-schemes
+./payload/local-share/color-schemes/DankMatugen.colors
+./payload/local-share/color-schemes/DankMatugenDark.colors
+./payload/local-share/color-schemes/DankMatugenLight.colors
 ./payload/local-share/fonts
 ./payload/local-share/fonts/JetBrainsMonoNerdFont
 ./payload/local-share/fonts/JetBrainsMonoNerdFont/JetBrainsMonoNerdFont-BoldItalic.ttf
@@ -12521,6 +12543,9 @@
 ./payload/local-share/quickshell-overview/services/HyprlandData.qml
 ./payload/local-share/quickshell-overview/services/qmldir
 ./payload/local-share/quickshell-overview/shell.qml
+./payload/local-state
+./payload/local-state/DankMaterialShell
+./payload/local-state/DankMaterialShell/session.json
 ./payload/mydotfiles
 ./payload/mydotfiles/backups
 ./payload/mydotfiles/backups/com.ml4w.dotfiles.stable
@@ -12555,6 +12580,7 @@
 ./payload/mydotfiles/com.ml4w.dotfiles.stable/.config/fish/fish_variables
 ./payload/mydotfiles/com.ml4w.dotfiles.stable/.config/gtk-3.0
 ./payload/mydotfiles/com.ml4w.dotfiles.stable/.config/gtk-3.0/colors.css
+./payload/mydotfiles/com.ml4w.dotfiles.stable/.config/gtk-3.0/dank-colors.css
 ./payload/mydotfiles/com.ml4w.dotfiles.stable/.config/gtk-3.0/gtk.css
 ./payload/mydotfiles/com.ml4w.dotfiles.stable/.config/gtk-3.0/settings.ini
 ./payload/mydotfiles/com.ml4w.dotfiles.stable/.config/gtk-4.0
@@ -12695,6 +12721,8 @@
 ./payload/mydotfiles/com.ml4w.dotfiles.stable/.config/hypr/workspaces.lua
 ./payload/mydotfiles/com.ml4w.dotfiles.stable/.config/kitty
 ./payload/mydotfiles/com.ml4w.dotfiles.stable/.config/kitty/colors-matugen.conf
+./payload/mydotfiles/com.ml4w.dotfiles.stable/.config/kitty/dank-tabs.conf
+./payload/mydotfiles/com.ml4w.dotfiles.stable/.config/kitty/dank-theme.conf
 ./payload/mydotfiles/com.ml4w.dotfiles.stable/.config/kitty/kitty.conf
 ./payload/mydotfiles/com.ml4w.dotfiles.stable/.config/matugen
 ./payload/mydotfiles/com.ml4w.dotfiles.stable/.config/matugen/config.toml
@@ -12878,6 +12906,7 @@
 ./payload/mydotfiles/com.ml4w.dotfiles.stable/.config/ohmyposh/zen.toml.bak
 ./payload/mydotfiles/com.ml4w.dotfiles.stable/.config/qt6ct
 ./payload/mydotfiles/com.ml4w.dotfiles.stable/.config/qt6ct/colors
+./payload/mydotfiles/com.ml4w.dotfiles.stable/.config/qt6ct/colors/matugen.conf
 ./payload/mydotfiles/com.ml4w.dotfiles.stable/.config/qt6ct/qss
 ./payload/mydotfiles/com.ml4w.dotfiles.stable/.config/qt6ct/qt6ct.conf
 ./payload/mydotfiles/com.ml4w.dotfiles.stable/.config/quickshell
@@ -13136,6 +13165,9 @@
 ./payload/mydotfiles/com.ml4w.dotfiles.stable/.gtkrc-2.0
 ./payload/mydotfiles/com.ml4w.dotfiles.stable/.Xresources
 ./payload/mydotfiles/com.ml4w.dotfiles.stable/.zshrc
+./payload/wallpapers
+./payload/wallpapers/6akdqnk4g3se1.png
+./payload/wallpapers/wallpaper-path.txt
 ./README.md
 ./restore.sh
 ./rice-backup.sh

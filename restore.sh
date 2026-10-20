@@ -31,6 +31,26 @@ if [ -d "$P/local-share" ]; then
     cp -a "$P/local-share/." "$HOME/.local/share/"
 fi
 
+# 3b. DMS runtime state (points at the wallpaper)
+if [ -d "$P/local-state" ]; then
+    info "Restoring ~/.local/state ..."
+    mkdir -p "$HOME/.local/state"
+    cp -a "$P/local-state/." "$HOME/.local/state/"
+fi
+
+# 3c. wallpaper, back to the absolute path DMS remembers
+if [ -d "$P/wallpapers" ] && [ -f "$P/wallpapers/wallpaper-path.txt" ]; then
+    WP="$(cat "$P/wallpapers/wallpaper-path.txt")"
+    if [ -n "$WP" ]; then
+        info "Restoring wallpaper: $WP"
+        mkdir -p "$(dirname "$WP")"
+        for f in "$P/wallpapers"/*; do
+            [ "$(basename "$f")" = "wallpaper-path.txt" ] && continue
+            cp -a "$f" "$(dirname "$WP")/"
+        done
+    fi
+fi
+
 # 4. shell setup
 if [ -d "$P/home" ]; then
     info "Restoring shell setup ..."
@@ -63,9 +83,15 @@ cat <<'NOTE'
 [OK] Restore complete.
 
 Next steps:
-  * The base system must exist first: Hyprland, Quickshell (qs), waybar, rofi,
+  * The base system must exist first. Main session: niri, DankMaterialShell (dms),
+    ghostty, matugen. Fallback session: Hyprland, Quickshell (qs), waybar, rofi,
     kitty, swaync, awww, and the ML4W dotfiles. See packages/ for the list from
     the machine this backup came from.
-  * Log out and back in (or run `hyprctl reload`) so Hyprland reloads everything.
+  * Log out and back in so niri / DMS (and Hyprland, if you use it) reload
+    everything. Niri reloads config.kdl live; DMS reads settings.json on start.
+  * If the wallpaper did not come back, point DMS at it again:
+        dms ipc call wallpaper set <path>
+  * DMS plugins are NOT in this archive (too large). Re-install them from the
+    DMS plugin manager; plugins.lock.json lists what was installed.
 
 NOTE
