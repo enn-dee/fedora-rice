@@ -39,8 +39,10 @@ want the other one. Nothing in this rice removes either session.
 
 - **Scrollable tiling** with 9 numbered workspaces (dynamic; they appear as pills).
 - **4 px gaps**, 2 px focus ring, **12 px** window corners.
-- **0.85 window opacity** — a `window-rule` in `config.kdl`. Niri has no
-  per-window blur, so transparency simply reveals the wallpaper.
+- **0.85 window opacity + glass blur** — two `window-rule`s in `config.kdl`:
+  windows are semitransparent, and niri 26.04's `background-effect { blur true }`
+  blurs whatever is behind each window (xray blur — computed once, shared by
+  all windows). The desktop wallpaper itself stays sharp.
 - **Material You colours**, generated from the wallpaper by **matugen** and
   written to `dms/colors.kdl` (focus ring / borders / tab indicator / insert hint).
 - **DMS top bar:** workspaces · focused window — music · clock · weather —
@@ -206,11 +208,17 @@ niri validate                        # check config.kdl + dms/*.kdl
 
 - **Bar layout / widgets / radius / blur:** `~/.config/DankMaterialShell/settings.json`
   (`barConfigs[].leftWidgets`, `centerWidgets`, `rightWidgets`, `cornerRadius`,
-  `blurredWallpaperLayer`, `blurWallpaperOnOverview`).
-  DMS rewrites this file live, so prefer the Settings GUI or `dms ipc call
-  settings set <key> <value>` while it is running.
+  `blurEnabled`, `blurWallpaperOnOverview`). DMS rewrites this file live, so
+  prefer the Settings GUI or `dms ipc call settings set <key> <value>` while it
+  is running.
+  ⚠️ `blurredWallpaperLayer true` blurs the **whole desktop** (it's a full-screen
+  backdrop layer), not just the area behind windows — leave it off if you want a
+  sharp wallpaper. App blur comes from the niri rule below instead.
 - **Gaps / borders / radius:** `~/.config/niri/dms/layout.kdl` (auto-generated).
-- **Window opacity:** the `window-rule { opacity 0.85 }` in `~/.config/niri/config.kdl`.
+- **Window opacity + app blur:** the two `window-rule`s in
+  `~/.config/niri/config.kdl` — `opacity 0.85` (semitransparency) and
+  `background-effect { blur true }` (niri 26.04, blurs behind windows; needs the
+  window to be see-through, hence the opacity rule).
 - **Colours:** `dms/colors.kdl` — auto-generated; remove its `include` from
   `config.kdl` if you ever want to set them by hand.
 
