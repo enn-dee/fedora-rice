@@ -214,6 +214,17 @@ niri validate                        # check config.kdl + dms/*.kdl
 > (`~/Music/wallpapers/6akdqnk4g3se1.png`). If your username differs, restore
 > the wallpaper elsewhere and run `dms ipc call wallpaper set <path>`.
 
+> **matugen fix — required for automatic re-theming.** DMS copies
+> `~/.config/matugen/config.toml` (the ML4W one, via symlink) to
+> `/tmp/matugen-config-*.toml` before running matugen. Four ML4W templates used
+> *relative* input paths (`./templates/colors.json`), which no longer resolve
+> from `/tmp`, and matugen aborts the whole run with
+> `Failed to get the input and output paths from hashmap` — every wallpaper
+> change then keeps the old colours. They now use
+> `~/.config/matugen/templates/...` instead, which resolves from any directory.
+> Symptom: `journalctl --user -u dms | grep -i matugen` shows
+> `Matugen failed (v4=true)` on every wallpaper change.
+
 ---
 
 ## 📋 Requirements
