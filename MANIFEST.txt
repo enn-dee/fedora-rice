@@ -12585,6 +12585,7 @@
 ./payload/mydotfiles/com.ml4w.dotfiles.stable/.config/gtk-3.0/settings.ini
 ./payload/mydotfiles/com.ml4w.dotfiles.stable/.config/gtk-4.0
 ./payload/mydotfiles/com.ml4w.dotfiles.stable/.config/gtk-4.0/colors.css
+./payload/mydotfiles/com.ml4w.dotfiles.stable/.config/gtk-4.0/dank-colors.css
 ./payload/mydotfiles/com.ml4w.dotfiles.stable/.config/gtk-4.0/gtk.css
 ./payload/mydotfiles/com.ml4w.dotfiles.stable/.config/gtk-4.0/settings.ini
 ./payload/mydotfiles/com.ml4w.dotfiles.stable/.config/hypr
@@ -12670,6 +12671,8 @@
 ./payload/mydotfiles/com.ml4w.dotfiles.stable/.config/hypr/conf/workspace.lua
 ./payload/mydotfiles/com.ml4w.dotfiles.stable/.config/hypr/conf/workspaces
 ./payload/mydotfiles/com.ml4w.dotfiles.stable/.config/hypr/conf/workspaces/default.lua
+./payload/mydotfiles/com.ml4w.dotfiles.stable/.config/hypr/dms
+./payload/mydotfiles/com.ml4w.dotfiles.stable/.config/hypr/dms/colors.lua
 ./payload/mydotfiles/com.ml4w.dotfiles.stable/.config/hypr/effects
 ./payload/mydotfiles/com.ml4w.dotfiles.stable/.config/hypr/effects/wallpaper
 ./payload/mydotfiles/com.ml4w.dotfiles.stable/.config/hypr/effects/wallpaper/blackwhite
@@ -12726,6 +12729,7 @@
 ./payload/mydotfiles/com.ml4w.dotfiles.stable/.config/kitty/kitty.conf
 ./payload/mydotfiles/com.ml4w.dotfiles.stable/.config/matugen
 ./payload/mydotfiles/com.ml4w.dotfiles.stable/.config/matugen/config.toml
+./payload/mydotfiles/com.ml4w.dotfiles.stable/.config/matugen/config.toml.bak-2026-10-20
 ./payload/mydotfiles/com.ml4w.dotfiles.stable/.config/matugen/post-hook-scripts
 ./payload/mydotfiles/com.ml4w.dotfiles.stable/.config/matugen/post-hook-scripts/gtk-themes-reload.sh
 ./payload/mydotfiles/com.ml4w.dotfiles.stable/.config/matugen/templates
