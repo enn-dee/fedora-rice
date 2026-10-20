@@ -97,6 +97,7 @@ Main modifier = **`Mod`** = `SUPER` (the Windows key). Layout is US.
 | `ALT` `SPACE` | Spotlight bar |
 | `Mod` `B` | Default browser |
 | `Mod` `E` | Default file manager |
+| `Mod` `C` | Visual Studio Code |
 | `Mod` `V` | Clipboard history |
 | `Mod` `SHIFT` `M` | Task manager |
 | `CTRL` `ALT` `DELETE` | Task manager |
@@ -146,7 +147,7 @@ Main modifier = **`Mod`** = `SUPER` (the Windows key). Layout is US.
 | `Mod` `SHIFT` `R` | Cycle preset window height |
 | `Mod` `CTRL` `R` | Reset window height |
 | `Mod` `CTRL` `F` | Expand column to available width |
-| `Mod` `C` | Centre column |
+| `Mod` `SHIFT` `C` | Centre column |
 | `Mod` `-` / `=` | Column width −/+ 10 % |
 | `Mod` `SHIFT` `-` / `=` | Window height −/+ 10 % |
 | `PRINT` | Screenshot (region) |
@@ -165,6 +166,8 @@ binds {
     Mod+Return { spawn "ghostty"; }
     Mod+B      { spawn "dms" "ipc" "call" "defaultApp" "browser"; }
     Mod+E      { spawn "dms" "ipc" "call" "defaultApp" "fileManager"; }
+    Mod+C      { spawn "code"; }
+    Mod+Shift+C { center-column; }
     Mod+M      { maximize-column; }
     Mod+Shift+M { spawn "dms" "ipc" "call" "processlist" "focusOrToggle"; }
     Mod+Ctrl+P  { spawn "dms" "ipc" "call" "powermenu" "toggle"; }
@@ -172,7 +175,9 @@ binds {
 ```
 
 (`Mod+M` was DMS's task manager; it moved to `Mod+Shift+M` to match the
-Hyprland habit of `Mod+M` = maximize.)
+Hyprland habit of `Mod+M` = maximize. `Mod+C` was DMS's centre-column; it
+moved to `Mod+Shift+C` so `Mod+C` can launch VS Code — the superseded
+entries are commented out in `dms/binds.kdl`.)
 
 ---
 
