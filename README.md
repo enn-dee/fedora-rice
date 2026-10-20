@@ -341,19 +341,38 @@ git clone https://github.com/zdharma-continuum/fast-syntax-highlighting \
 #    (dmsThemeSync, quickCapture).
 ```
 
-**Optional — mouse cursor.** The config points at **`Bibata-Modern-Ice`**, which
-is *not* bundled:
+**Mouse cursor — `Bibata-Modern-Ice`.** The theme is *not* bundled in the repo
+(cursors are ~2 MB of binaries), so re-download it on a fresh system:
 
 ```bash
-# https://github.com/ful1e5/Bibata_Cursor  → extract to ~/.local/share/icons/
-# (or install your distro's Bibata package)
+# https://github.com/ful1e5/Bibata_Cursor → v2.0.7 Bibata-Modern-Ice.tar.xz
+# extract to ~/.local/share/icons/   (or install your distro's Bibata package)
 ```
 
-If you skip it, the system falls back to your distro's default cursor. To use a
-different one, change `cursorSettings` in
-`~/.config/DankMaterialShell/settings.json` (Niri), and for the Hyprland
-fallback `XCURSOR_THEME` in `~/.config/hypr/conf/ml4w.lua` +
-`~/.config/hypr/conf/autostart.lua`.
+The rice sets the cursor in **every layer that matters** — if a new app shows the
+wrong cursor, one of these is missing on your system:
+
+| Layer | File | Applies to |
+|---|---|---|
+| niri compositor | `~/.config/niri/dms/cursor.kdl` | the pointer itself (compositor fallback) |
+| Session env | `~/.config/environment.d/10-cursor.conf` | new apps (Electron, Qt, env-based) |
+| GTK / gsettings | `org.gnome.desktop.interface cursor-theme` | GTK4/GTK3 apps |
+| GTK3 fallback | `~/.config/gtk-3.0/settings.ini` | GTK3 apps that skip gsettings |
+| Xwayland | `~/.Xresources` (`Xcursor.theme`) | legacy X11 apps |
+| Hyprland fallback | `~/.config/hypr/conf/ml4w.lua` + `autostart.lua` | the fallback session |
+
+To use a different theme: install it, then change the name in
+`cursorSettings` (`~/.config/DankMaterialShell/settings.json`, Niri),
+`~/.config/environment.d/10-cursor.conf`, and (for the fallback session)
+`~/.config/hypr/conf/ml4w.lua`. **Gotcha:** DMS regenerates
+`dms/cursor.kdl` only when the cursor setting changes *through its own UI* —
+the IPC API refuses object-typed settings, so a hand-edit of `settings.json`
+alone leaves niri on the default cursor. The bundled `cursor.kdl` is written in
+DMS's exact output format, so DMS overwrites it consistently if you ever pick a
+cursor in Settings → Appearance → Cursor.
+
+Already-running apps cache the cursor at startup — reopen them after a theme
+change; the env var in `environment.d` only applies from the next login.
 
 ### Step 6 — Log out and back in
 
@@ -544,7 +563,8 @@ at load time from `~/.config/hypr/input.lua`.
 `oh-my-posh` is not bundled, and the three zsh plugins must be cloned — see *Step 5*.
 
 **The cursor is the wrong shape / theme**
-The config references `Bibata-Modern-Ice`; install it or change the name.
+`Bibata-Modern-Ice` isn't bundled — install it (see *Step 5*), then check the
+layer table there. Running apps cache their cursor: reopen them after a change.
 
 ---
 
