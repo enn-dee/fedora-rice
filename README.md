@@ -606,10 +606,16 @@ at load time from `~/.config/hypr/input.lua`.
 `oh-my-posh` is not bundled, and the three zsh plugins must be cloned — see *Step 5*.
 
 **No grey inline suggestions / command colours in the terminal**
-oh-my-zsh loads plugins from `~/.oh-my-zsh/custom/plugins/`, but ML4W clones
-`zsh-autosuggestions` and `zsh-syntax-highlighting` into `~/.zsh/` instead —
-oh-my-zsh silently skips plugins it can't find. Fix with symlinks (the clones
-are kept in `~/.zsh/`, so ML4W updates still apply):
+First check which shell your terminal starts. The login shell is **bash** —
+Hyprland's kitty forces zsh (`shell /usr/bin/zsh` in `kitty.conf`) and so does
+ghostty (`command = zsh` in `~/.config/ghostty/config`). Without that line the
+terminal starts plain bash and none of the zsh setup applies. Either keep those
+lines, or make zsh the login shell once: `chsh -s /usr/bin/zsh`.
+
+Second, oh-my-zsh loads plugins from `~/.oh-my-zsh/custom/plugins/`, but ML4W
+clones `zsh-autosuggestions` and `zsh-syntax-highlighting` into `~/.zsh/`
+instead — oh-my-zsh silently skips plugins it can't find. Fix with symlinks
+(the clones are kept in `~/.zsh/`, so ML4W updates still apply):
 
 ```bash
 ln -sfn ~/.zsh/zsh-autosuggestions    ~/.oh-my-zsh/custom/plugins/
