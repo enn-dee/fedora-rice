@@ -605,6 +605,19 @@ at load time from `~/.config/hypr/input.lua`.
 **The zsh prompt looks broken / `[oh-my-zsh] plugin '…' not found`**
 `oh-my-posh` is not bundled, and the three zsh plugins must be cloned — see *Step 5*.
 
+**No grey inline suggestions / command colours in the terminal**
+oh-my-zsh loads plugins from `~/.oh-my-zsh/custom/plugins/`, but ML4W clones
+`zsh-autosuggestions` and `zsh-syntax-highlighting` into `~/.zsh/` instead —
+oh-my-zsh silently skips plugins it can't find. Fix with symlinks (the clones
+are kept in `~/.zsh/`, so ML4W updates still apply):
+
+```bash
+ln -sfn ~/.zsh/zsh-autosuggestions    ~/.oh-my-zsh/custom/plugins/
+ln -sfn ~/.zsh/zsh-syntax-highlighting ~/.oh-my-zsh/custom/plugins/
+```
+
+Open a new terminal afterwards (existing shells keep the old state).
+
 **The cursor is the wrong shape / theme**
 `Bibata-Modern-Ice` isn't bundled — install it (see *Step 5*), then check the
 layer table there. Running apps cache their cursor: reopen them after a change.
