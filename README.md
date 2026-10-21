@@ -611,6 +611,9 @@ Hyprland's kitty forces zsh (`shell /usr/bin/zsh` in `kitty.conf`) and so does
 ghostty (`command = zsh` in `~/.config/ghostty/config`). Without that line the
 terminal starts plain bash and none of the zsh setup applies. Either keep those
 lines, or make zsh the login shell once: `chsh -s /usr/bin/zsh`.
+**ghostty reads `command` only at startup** — after adding it, fully quit
+ghostty (single instance: close every window, or `pkill -x ghostty`) and
+relaunch; hot-reloaded new tabs keep the old shell.
 
 Second, oh-my-zsh loads plugins from `~/.oh-my-zsh/custom/plugins/`, but ML4W
 clones `zsh-autosuggestions` and `zsh-syntax-highlighting` into `~/.zsh/`
